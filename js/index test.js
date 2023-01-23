@@ -15,23 +15,31 @@ const myGameArea = {
     const gameBoard = document.getElementById("game-board");
     gameBoard.appendChild(this.canvas);
   }, // standard canvas variables
+  testInterval() {
+    if (score === 0) {
+      myGameArea.myInterval = setInterval(
+        myGameArea.updateLinearMovement,
+        40000 / 60
+      );
+    } else if (score === 1) {
+      clearInterval(myGameArea.myInterval);
+      setInterval(myGameArea.updateLinearMovement, 20000 / 60);
+    } else if (score === 5) {
+      clearInterval(myGameArea.myInterval);
+      setInterval(myGameArea.updateLinearMovement, 20000 / 60);
+    } else if (score === 10) {
+      clearInterval(myGameArea.myInterval);
+      setInterval(myGameArea.updateLinearMovement, 20000 / 60);
+    }
+  },
   updateGame: function () {
     myGameArea.components.forEach((component) => {
       component.render();
     });
     myGameArea.bonus.forEach((bonus1) => {
       if (bonus1.checkEating(myGameArea.snake[0])) {
-        // for (let i = 0; i < myGameArea.snake.length; i++) {
-        //   myGameArea.snake[i].speed = 100
-        // }
-        // myGameArea.currentHead.speed = currentHead.speed + 100
         score += 1; // create bonus give score 1
-        // console.log('test')
-
-        // if (myGameArea.snake[0].speed < 5) {
-        //   // puts a limit on the speed
-        //   myGameArea.snake[0].speed += 0.1; // increase the speed of the player if he eats a bonus
-        // }
+        myGameArea.testInterval();
         let indexBonus1 = myGameArea.bonus.indexOf(bonus1); //find the index of the bonus from the bonus array
         myGameArea.bonus.splice(indexBonus1, 1); // remove this specific bonus using the index from the array
       }
@@ -39,11 +47,7 @@ const myGameArea = {
     });
     myGameArea.joker.forEach((joker1) => {
       if (joker1.checkEating(myGameArea.snake[0])) {
-        // if (player.speed < 5) {
-        // puts a limit on the speed
-        // player.speed += 0.1; // increase the speed of the player if he eats a joker
-        // }
-        score += 2; // create bonus give score 2
+        bonusToEat += 1; // create bonus give score 2
         let indexJoker1 = myGameArea.joker.indexOf(joker1); //find the index of the bonus from the bonus array
         myGameArea.joker.splice(indexJoker1, 1); // remove this specific bonus using the index from the array
       }
@@ -51,9 +55,6 @@ const myGameArea = {
     });
 
     // Snake logic
-    if (score >= 1) {
-      myGameArea.snake[0].speed = 10;
-    }
     // Snake rendering
     myGameArea.snake.forEach((body) => {
       body.render();
@@ -64,6 +65,14 @@ const myGameArea = {
     myGameArea.context.fillText(
       `Score: ${score}`,
       myGameArea.canvas.width / 10,
+      40
+    );
+
+    myGameArea.context.font = "20px Verdana";
+    myGameArea.context.fillStyle = "black";
+    myGameArea.context.fillText(
+      `Bonus: ${bonusToEat}`,
+      myGameArea.canvas.width - 160,
       40
     );
     // display of score on top left
@@ -77,12 +86,7 @@ const myGameArea = {
 
     // My own snake movement
     if (myGameArea.playerMovesUp && !myGameArea.playerMovesDown) {
-      for (let i = 0; i < myGameArea.snake.length; i++) {
-        myGameArea.snake[i].speed = 20;
-      }
       newY -= 10;
-      // newY -= myGameArea.snake[0].speed
-      // (10 + myGameArea.snake[0].speed);
     } else if (myGameArea.playerMovesRight) {
       newX += 10;
     } else if (myGameArea.playerMovesDown) {
@@ -127,7 +131,7 @@ const myGameArea = {
 };
 
 // gameOver : function () {
-
+// myGameArea.snake.forEach((element ))
 // }
 
 class Component {
@@ -164,13 +168,13 @@ class Component {
   //   equivalent to checkcollision function
 }
 
-class HeadSnake extends Component {
-  constructor(x, y, w, h, color) {
-    super(x, y, w, h, color);
-    this.color = "black";
-    this.speed = 10;
-  }
-}
+// class HeadSnake extends Component {
+//   constructor(x, y, w, h, color) {
+//     super(x, y, w, h, color);
+//     this.color = "black";
+//     this.speed = 10;
+//   }
+// }
 class BodySnake extends Component {
   constructor(x, y, w, h, color) {
     super(x, y, w, h, color);
@@ -178,13 +182,13 @@ class BodySnake extends Component {
     this.speed = 10;
   }
 }
-class TailSnake extends Component {
-  constructor(x, y, w, h, color) {
-    super(x, y, w, h, color);
-    this.color = "black";
-    this.speed = 10;
-  }
-}
+// class TailSnake extends Component {
+//   constructor(x, y, w, h, color) {
+//     super(x, y, w, h, color);
+//     this.color = "black";
+//     this.speed = 10;
+//   }
+// }
 
 class Background extends Component {
   constructor(x, y, w, h, color) {
@@ -290,7 +294,6 @@ document.getElementById("start-button").addEventListener("click", (event) => {
     10, //length of the player
     10 // width of the player
   );
-
   myGameArea.snake.push(snakeBody); // pushed the player inside the components array (with the background)
 
   snakeBody2 = new BodySnake(
@@ -307,7 +310,6 @@ document.getElementById("start-button").addEventListener("click", (event) => {
     10, //length of the player
     10 // width of the player
   );
-
   myGameArea.snake.push(snakeBody3); // pushed the player inside the components array (with the background)
 
   snakeBody4 = new BodySnake(
@@ -316,7 +318,6 @@ document.getElementById("start-button").addEventListener("click", (event) => {
     10, //length of the player
     10 // width of the player
   );
-
   myGameArea.snake.push(snakeBody4); // pushed the player inside the components array (with the background)
 
   setInterval(() => {
@@ -326,7 +327,16 @@ document.getElementById("start-button").addEventListener("click", (event) => {
       Math.floor((Math.random() * myGameArea.canvas.height - 10) / 10) * 10;
 
     let anyBonus = new Bonus(randomXBonus, randomYBonus, 10, 10);
-    myGameArea.bonus.push(anyBonus);
+    if (
+      (anyBonus.x >= 50 && anyBonus.x <= 130) || // create a condition that will check the x and y of the randomBonus to not display it behind score of the player
+      (anyBonus.x >= 340 &&
+        anyBonus.x <= 420 && // create a condition that will check the x and y of the randomBonus to not display it behind bonus of the player
+        anyBonus.y >= 20 &&
+        anyBonus.y <= 30)
+    ) {
+    } else {
+      myGameArea.bonus.push(anyBonus);
+    }
   }, 4000);
   //   creates the random bonuses using a setinterval of 4000
 
@@ -337,13 +347,24 @@ document.getElementById("start-button").addEventListener("click", (event) => {
       Math.floor((Math.random() * myGameArea.canvas.height - 10) / 10) * 10;
 
     let anyJoker = new Joker(randomXJoker, randomYJoker, 10, 10);
-    myGameArea.joker.push(anyJoker);
-  }, 8000); //creates the exact same for jokers and can change the timing of jokers
+    if (
+      (anyJoker.x >= 50 && anyJoker.x <= 130) || // create a condition that will check the x and y of the randomJoker to not display it behind score of the player
+      (anyJoker.x >= 340 &&
+        anyJoker.x <= 420 && // create a condition that will check the x and y of the randomJoker to not display it behind bonus of the player
+        anyJoker.y >= 20 &&
+        anyJoker.y <= 30)
+    ) {
+    } else {
+      myGameArea.joker.push(anyJoker);
+    }
+  }, 16000); //creates the exact same for jokers and can change the timing of jokers
 
   setInterval(myGameArea.updateGame, 1000 / 60);
   // frequency of update of the game
-  setInterval(myGameArea.updateLinearMovement, 40000 / 60);
-  // frequency of update of the movement of the snake (made two different to have a sequenced movement by 10 so that it's always moving 10 by 10 on every axis)
 });
 
 let score = 0; // score starts at 0
+let bonusToEat = 0;
+
+clearInterval(myGameArea.myInterval);
+myGameArea.testInterval();
