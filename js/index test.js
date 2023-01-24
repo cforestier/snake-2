@@ -4,7 +4,9 @@ const myGameArea = {
   bonus: [], //   array for bonus that gets filled in
   joker: [], //   array for bonus that gets filled in
   snake: [],
+  isGameOver: false,
   start: function () {
+    isGameOver = false;
     let playerMovesDown = false;
     let playerMovesUp = false;
     let playerMovesLeft = false;
@@ -23,59 +25,80 @@ const myGameArea = {
       );
     } else if (score === 1) {
       clearInterval(myGameArea.myInterval);
-      setInterval(myGameArea.updateLinearMovement, 20000 / 60);
+      myGameArea.myInterval = setInterval(
+        myGameArea.updateLinearMovement,
+        20000 / 60
+      );
     } else if (score === 5) {
       clearInterval(myGameArea.myInterval);
-      setInterval(myGameArea.updateLinearMovement, 20000 / 60);
+      myGameArea.myInterval = setInterval(
+        myGameArea.updateLinearMovement,
+        10000 / 60
+      );
     } else if (score === 10) {
       clearInterval(myGameArea.myInterval);
-      setInterval(myGameArea.updateLinearMovement, 20000 / 60);
+      myGameArea.myInterval = setInterval(
+        myGameArea.updateLinearMovement,
+        5000 / 60
+      );
     }
   },
   updateGame: function () {
-    myGameArea.components.forEach((component) => {
-      component.render();
-    });
-    myGameArea.bonus.forEach((bonus1) => {
-      if (bonus1.checkEating(myGameArea.snake[0])) {
-        score += 1; // create bonus give score 1
-        myGameArea.testInterval();
-        let indexBonus1 = myGameArea.bonus.indexOf(bonus1); //find the index of the bonus from the bonus array
-        myGameArea.bonus.splice(indexBonus1, 1); // remove this specific bonus using the index from the array
+    if (!myGameArea.isGameOver) {
+      myGameArea.components.forEach((component) => {
+        component.render();
+      });
+      myGameArea.bonus.forEach((bonus1) => {
+        if (bonus1.checkEating(myGameArea.snake[0])) {
+          score += 1; // create bonus give score 1
+          myGameArea.testInterval();
+          let indexBonus1 = myGameArea.bonus.indexOf(bonus1); //find the index of the bonus from the bonus array
+          myGameArea.bonus.splice(indexBonus1, 1); // remove this specific bonus using the index from the array
+        }
+        bonus1.render(); // if no collision, just render the bonus
+      });
+      myGameArea.joker.forEach((joker1) => {
+        if (joker1.checkEating(myGameArea.snake[0])) {
+          bonusToEat += 1; // create bonus give score 2
+          let indexJoker1 = myGameArea.joker.indexOf(joker1); //find the index of the bonus from the bonus array
+          myGameArea.joker.splice(indexJoker1, 1); // remove this specific bonus using the index from the array
+        }
+        joker1.render(); // if no collision, just render the joker
+      });
+
+      // Snake logic
+      // Snake rendering
+      myGameArea.snake.forEach((body) => {
+        body.render();
+      });
+
+      myGameArea.context.font = "20px Verdana";
+      myGameArea.context.fillStyle = "black";
+      myGameArea.context.fillText(
+        `Score: ${score}`,
+        myGameArea.canvas.width / 10,
+        40
+      );
+
+      myGameArea.context.font = "20px Verdana";
+      myGameArea.context.fillStyle = "black";
+      myGameArea.context.fillText(
+        `Bonus: ${bonusToEat}`,
+        myGameArea.canvas.width - 160,
+        40
+      ); // display of score on top left
+    } else if (myGameArea.isGameOver) {
+      ctx.clearRect(0, 0, myGameArea.canvas.width, myGameArea.canvas.height);
+    }
+  },
+  updateGameOver: function () {
+    myGameArea.snake.forEach((snakeElement) => {
+      if (snakeElement.checkEating(myGameArea.snake[0])) {
+        myGameArea.isGameOver = true;
+        ctx.clearRect(0, 0, myGameArea.canvas.width, myGameArea.canvas.height);
+      } else {
       }
-      bonus1.render(); // if no collision, just render the bonus
     });
-    myGameArea.joker.forEach((joker1) => {
-      if (joker1.checkEating(myGameArea.snake[0])) {
-        bonusToEat += 1; // create bonus give score 2
-        let indexJoker1 = myGameArea.joker.indexOf(joker1); //find the index of the bonus from the bonus array
-        myGameArea.joker.splice(indexJoker1, 1); // remove this specific bonus using the index from the array
-      }
-      joker1.render(); // if no collision, just render the joker
-    });
-
-    // Snake logic
-    // Snake rendering
-    myGameArea.snake.forEach((body) => {
-      body.render();
-    });
-
-    myGameArea.context.font = "20px Verdana";
-    myGameArea.context.fillStyle = "black";
-    myGameArea.context.fillText(
-      `Score: ${score}`,
-      myGameArea.canvas.width / 10,
-      40
-    );
-
-    myGameArea.context.font = "20px Verdana";
-    myGameArea.context.fillStyle = "black";
-    myGameArea.context.fillText(
-      `Bonus: ${bonusToEat}`,
-      myGameArea.canvas.width - 160,
-      40
-    );
-    // display of score on top left
   },
   updateLinearMovement: function () {
     let newSnakeBody;
@@ -130,9 +153,7 @@ const myGameArea = {
   }, // function to update the movement of the snake and respawn the snake on the other side of the screen
 };
 
-// gameOver : function () {
-// myGameArea.snake.forEach((element ))
-// }
+// document.getElementById("game-over").style.display = "flex"
 
 class Component {
   constructor(x, y, w, h, color) {
@@ -319,6 +340,22 @@ document.getElementById("start-button").addEventListener("click", (event) => {
     10 // width of the player
   );
   myGameArea.snake.push(snakeBody4); // pushed the player inside the components array (with the background)
+
+  snakeBody5 = new BodySnake(
+    myGameArea.canvas.width / 2 + 20, //positions the player in the center width
+    myGameArea.canvas.height / 2, //positions the player in the center height
+    10, //length of the player
+    10 // width of the player
+  );
+  myGameArea.snake.push(snakeBody5); // pushed the player inside the components array (with the background)
+
+  snakeBody6 = new BodySnake(
+    myGameArea.canvas.width / 2 + 30, //positions the player in the center width
+    myGameArea.canvas.height / 2, //positions the player in the center height
+    10, //length of the player
+    10 // width of the player
+  );
+  myGameArea.snake.push(snakeBody6); // pushed the player inside the components array (with the background)
 
   setInterval(() => {
     let randomXBonus =
