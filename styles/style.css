@@ -1,9 +1,9 @@
 body {
   padding: 0;
-  text-align: center;
 }
 
 .game-intro {
+  text-align: center;
   float: left;
   padding: 1.5% 10%;
 }
@@ -52,16 +52,13 @@ canvas {
   width: 722px;
 }
 
-#game-over{
-  z-index: 0;
+#game-over {
+  z-index: 1;
   padding-left: 108px;
-  padding-top: 85px;
+  height: 450px;
   position: relative;
   display: none;
   justify-content: center;
   flex-direction: row;
-  margin: 0px;
   align-items: center;
-  height: 300px;
-  padding-right: 50px;
 }

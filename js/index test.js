@@ -94,6 +94,7 @@ const myGameArea = {
         myGameArea.canvas.width,
         myGameArea.canvas.height
       );
+      document.getElementById('game-over').style.display = "flex";
     }
   },
 
