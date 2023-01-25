@@ -88,18 +88,27 @@ const myGameArea = {
         40
       ); // display of score on top left
     } else if (myGameArea.isGameOver) {
-      ctx.clearRect(0, 0, myGameArea.canvas.width, myGameArea.canvas.height);
+      myGameArea.context.clearRect(
+        0,
+        0,
+        myGameArea.canvas.width,
+        myGameArea.canvas.height
+      );
     }
   },
+
   updateGameOver: function () {
-    myGameArea.snake.forEach((snakeElement) => {
-      if (snakeElement.checkEating(myGameArea.snake[0])) {
+    for (let i = 1; i < myGameArea.snake.length; i++) {
+      if (
+        myGameArea.snake[0].x === myGameArea.snake[i].x &&
+        myGameArea.snake[0].y === myGameArea.snake[i].y
+      ) {
+        console.log(myGameArea.isGameOver);
         myGameArea.isGameOver = true;
-        ctx.clearRect(0, 0, myGameArea.canvas.width, myGameArea.canvas.height);
-      } else {
       }
-    });
+    }
   },
+
   updateLinearMovement: function () {
     let newSnakeBody;
     let currentHead = myGameArea.snake[0];
@@ -397,6 +406,8 @@ document.getElementById("start-button").addEventListener("click", (event) => {
   }, 16000); //creates the exact same for jokers and can change the timing of jokers
 
   setInterval(myGameArea.updateGame, 1000 / 60);
+  // frequency of update of the game
+  setInterval(myGameArea.updateGameOver, 1000 / 60);
   // frequency of update of the game
 });
 
