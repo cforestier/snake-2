@@ -53,7 +53,7 @@ const myGameArea = {
         });
         myGameArea.bonus.forEach((bonus1) => {
           if (bonus1.checkEating(myGameArea.snake[0])) {
-            ateABonus = true;
+            myGameArea.ateABonus = true;
             score += 1; // create bonus give score 1
             myGameArea.testInterval();
             let indexBonus1 = myGameArea.bonus.indexOf(bonus1); //find the index of the bonus from the bonus array
@@ -171,7 +171,11 @@ const myGameArea = {
       myGameArea.playerMovesLeft
     ) {
       myGameArea.snake.unshift(newSnakeBody);
-      myGameArea.snake.pop();
+      if (myGameArea.ateABonus) {
+        myGameArea.ateABonus = false;
+      } else {
+        myGameArea.snake.pop();
+      }
     }
 
     if (
