@@ -108,6 +108,7 @@ canvas {
   position: absolute;
   z-index: 2;
   width: 722px;
+  box-shadow:8px 8px 10px 0 rgba(0,0,0,0.5);
 }
 
 #game-over {
