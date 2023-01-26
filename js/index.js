@@ -1,12 +1,13 @@
 const myGameArea = {
   canvas: document.createElement("canvas"),
-  components: [],
-  // create general components, player and background
-  bonus: [],
-  //   array for bonus that gets filled in
-  joker: [],
-  //   array for bonus that gets filled in
+  components: [], // create general components, player and background
+  bonus: [], //   array for bonus that gets filled in
+  joker: [], //   array for bonus that gets filled in
+  snake: [],
+  ateABonus: false,
+  isGameOver: false,
   start: function () {
+    isGameOver = false;
     let playerMovesDown = false;
     let playerMovesUp = false;
     let playerMovesLeft = false;
@@ -17,72 +18,180 @@ const myGameArea = {
     const gameBoard = document.getElementById("game-board");
     gameBoard.appendChild(this.canvas);
   }, // standard canvas variables
-  updateGame: function () {
-    myGameArea.components.forEach((component) => {
-      component.render();
-    });
-    myGameArea.bonus.forEach((bonus1) => {
-      if (bonus1.checkEating(player)) {
-        score += 1; // create bonus give score 1
-        if (player.speed < 5) {
-          // puts a limit on the speed
-          player.speed += 0.1; // increase the speed of the player if he eats a bonus
-        }
-        let indexBonus1 = myGameArea.bonus.indexOf(bonus1); //find the index of the bonus from the bonus array
-        myGameArea.bonus.splice(indexBonus1, 1); // remove this specific bonus using the index from the array
-      }
-      bonus1.render(); // if no collision, just render the bonus
-    });
-    myGameArea.joker.forEach((joker1) => {
-      if (joker1.checkEating(player)) {
-        if (player.speed < 5) {
-          // puts a limit on the speed
-          player.speed += 0.1; // increase the speed of the player if he eats a joker
-        }
-        score += 2; // create bonus give score 2
-        let indexJoker1 = myGameArea.joker.indexOf(joker1); //find the index of the bonus from the bonus array
-        myGameArea.joker.splice(indexJoker1, 1); // remove this specific bonus using the index from the array
-      }
-      joker1.render(); // if no collision, just render the joker
-    });
-    myGameArea.context.font = "20px Verdana";
-    myGameArea.context.fillStyle = "black";
-    myGameArea.context.fillText(
-      `Score: ${score}`,
-      myGameArea.canvas.width / 10,
-      40
-    );
-    // display of score on top left
+  testInterval() {
+    if (score === 0) {
+      myGameArea.myInterval = setInterval(
+        myGameArea.updateLinearMovement,
+        40000 / 60
+      );
+    } else if (score === 1) {
+      clearInterval(myGameArea.myInterval);
+      myGameArea.myInterval = setInterval(
+        myGameArea.updateLinearMovement,
+        20000 / 60
+      );
+    } else if (score === 5) {
+      clearInterval(myGameArea.myInterval);
+      myGameArea.myInterval = setInterval(
+        myGameArea.updateLinearMovement,
+        10000 / 60
+      );
+    } else if (score === 10) {
+      clearInterval(myGameArea.myInterval);
+      myGameArea.myInterval = setInterval(
+        myGameArea.updateLinearMovement,
+        5000 / 60
+      );
+    }
   },
+  updateGame: function () {
+    toBeUpdated = true;
+    if (toBeUpdated) {
+      if (!myGameArea.isGameOver) {
+        myGameArea.components.forEach((component) => {
+          component.render();
+        });
+        myGameArea.bonus.forEach((bonus1) => {
+          if (bonus1.checkEating(myGameArea.snake[0])) {
+            myGameArea.ateABonus = true;
+            score += 1; // create bonus give score 1
+            myGameArea.testInterval();
+            let indexBonus1 = myGameArea.bonus.indexOf(bonus1); //find the index of the bonus from the bonus array
+            myGameArea.bonus.splice(indexBonus1, 1); // remove this specific bonus using the index from the array
+          }
+          bonus1.render(); // if no collision, just render the bonus
+        });
+        myGameArea.joker.forEach((joker1) => {
+          if (joker1.checkEating(myGameArea.snake[0])) {
+            bonusToEat += 1; // create bonus give score 2
+            let indexJoker1 = myGameArea.joker.indexOf(joker1); //find the index of the bonus from the bonus array
+            myGameArea.joker.splice(indexJoker1, 1); // remove this specific bonus using the index from the array
+          }
+          joker1.render(); // if no collision, just render the joker
+        });
+
+        // Snake logic
+        // Snake rendering
+        myGameArea.snake.forEach((body) => {
+          body.render();
+        });
+
+        myGameArea.context.font = "20px Verdana";
+        myGameArea.context.fillStyle = "black";
+        myGameArea.context.fillText(
+          `Score: ${score}`,
+          myGameArea.canvas.width / 10,
+          40
+        );
+
+        myGameArea.context.font = "20px Verdana";
+        myGameArea.context.fillStyle = "black";
+        myGameArea.context.fillText(
+          `Bonus: ${bonusToEat}`,
+          myGameArea.canvas.width - 160,
+          40
+        ); // display of score on top left
+      } else if (myGameArea.isGameOver) {
+        myGameArea.context.clearRect(
+          0,
+          0,
+          myGameArea.canvas.width,
+          myGameArea.canvas.height
+        );
+        myGameArea.context.fillStyle = "#96d202";
+        myGameArea.context.fillRect(
+          0,
+          0,
+          myGameArea.canvas.width,
+          myGameArea.canvas.height
+        );
+        myGameArea.context.textAlign = "center";
+        myGameArea.context.fillStyle = "black";
+        myGameArea.context.fillText(
+          `Game-Over!`,
+          myGameArea.canvas.width / 2,
+          myGameArea.canvas.height / 2 - 30
+        );
+        myGameArea.context.fillText(
+          `Your score is ${score}`,
+          myGameArea.canvas.width / 2,
+          myGameArea.canvas.height / 2
+        );
+        myGameArea.context.fillText(
+          `and you got ${bonusToEat} Bonus eaten`,
+          myGameArea.canvas.width / 2,
+          myGameArea.canvas.height / 2 + 30
+        );
+      }
+    } else {
+      toBeUpdated = false;
+    }
+  },
+
+  updateGameOver: function () {
+    for (let i = 1; i < myGameArea.snake.length; i++) {
+      if (
+        myGameArea.snake[0].x === myGameArea.snake[i].x &&
+        myGameArea.snake[0].y === myGameArea.snake[i].y
+      ) {
+        myGameArea.isGameOver = true;
+      }
+    }
+  },
+
   updateLinearMovement: function () {
+    let newSnakeBody;
+    let currentHead = myGameArea.snake[0];
+
+    let newX = currentHead.x;
+    let newY = currentHead.y;
+
+    // My own snake movement
+    if (myGameArea.playerMovesUp && !myGameArea.playerMovesDown) {
+      newY -= 10;
+    } else if (myGameArea.playerMovesRight) {
+      newX += 10;
+    } else if (myGameArea.playerMovesDown) {
+      newY += 10;
+    } else if (myGameArea.playerMovesLeft) {
+      newX -= 10;
+    }
+
+    newSnakeBody = new BodySnake(
+      newX,
+      newY,
+      10, //length of the player
+      10 // width of the player
+    );
+
+    if (
+      myGameArea.playerMovesUp ||
+      myGameArea.playerMovesRight ||
+      myGameArea.playerMovesDown ||
+      myGameArea.playerMovesLeft
+    ) {
+      myGameArea.snake.unshift(newSnakeBody);
+      if (myGameArea.ateABonus) {
+        myGameArea.ateABonus = false;
+      } else {
+        myGameArea.snake.pop();
+      }
+    }
+
     if (
       myGameArea.playerMovesDown &&
-      player.y >= myGameArea.canvas.height - 10
+      myGameArea.snake[0].y >= myGameArea.canvas.height
     ) {
-      player.y = 0;
-    } else if (
-      myGameArea.playerMovesDown &&
-      player.y <= myGameArea.canvas.height - 10
-    ) {
-      player.y += player.speed;
-    } else if (myGameArea.playerMovesUp && player.y <= 0) {
-      player.y = myGameArea.canvas.height - 10;
-    } else if (myGameArea.playerMovesUp && player.y >= 0) {
-      player.y -= player.speed;
-    } else if (myGameArea.playerMovesLeft && player.x <= 0) {
-      player.x = myGameArea.canvas.width - 10;
-    } else if (myGameArea.playerMovesLeft && player.x >= 0) {
-      player.x -= player.speed;
+      myGameArea.snake[0].y = 0;
+    } else if (myGameArea.playerMovesUp && myGameArea.snake[0].y === -10) {
+      myGameArea.snake[0].y = myGameArea.canvas.height - 10;
+    } else if (myGameArea.playerMovesLeft && myGameArea.snake[0].x === -10) {
+      myGameArea.snake[0].x = myGameArea.canvas.width - 10;
     } else if (
       myGameArea.playerMovesRight &&
-      player.x >= myGameArea.canvas.width - 10
+      myGameArea.snake[0].x >= myGameArea.canvas.width
     ) {
-      player.x = 0;
-    } else if (
-      myGameArea.playerMovesRight &&
-      player.x < myGameArea.canvas.width - 10
-    ) {
-      player.x += player.speed;
+      myGameArea.snake[0].x = 0;
     }
   }, // function to update the movement of the snake and respawn the snake on the other side of the screen
 };
@@ -121,48 +230,27 @@ class Component {
   //   equivalent to checkcollision function
 }
 
-class Player extends Component {
+// class HeadSnake extends Component {
+//   constructor(x, y, w, h, color) {
+//     super(x, y, w, h, color);
+//     this.color = "black";
+//     this.speed = 10;
+//   }
+// }
+class BodySnake extends Component {
   constructor(x, y, w, h, color) {
     super(x, y, w, h, color);
-    this.x = x;
-    this.y = y;
-    this.w = w;
-    this.h = h;
     this.color = "black";
     this.speed = 10;
-  } // class for the player
-  // moveDown() {
-  //   //possibility to move down the player
-  //   if (this.y >= myGameArea.canvas.height - 10) {
-  //     // function to replace the player on the top side of the screen if he moves away from the screen
-  //     player.y = 0;
-  //   } else {
-  //     this.y += 10;
-  //   }
-  // }
-  // moveUp() {
-  //   if (this.y < 10) {
-  //     player.y = myGameArea.canvas.height - 10;
-  //   } else {
-  //     this.y -= 10;
-  //   }
-  // }
-  // moveLeft() {
-  //   if (this.x < 10) {
-  //     player.x = myGameArea.canvas.width - 10;
-  //   } else {
-  //     this.x -= 10;
-  //     //   this.moveLeft()
-  //   }
-  // }
-  // moveRight() {
-  //   if (this.x >= myGameArea.canvas.width - 10) {
-  //     this.x = 0;
-  //   } else {
-  //     this.x += 10;
-  //   }
-  // } we do not need to move the snake it moves only by updatelinearmovement
+  }
 }
+// class TailSnake extends Component {
+//   constructor(x, y, w, h, color) {
+//     super(x, y, w, h, color);
+//     this.color = "black";
+//     this.speed = 10;
+//   }
+// }
 
 class Background extends Component {
   constructor(x, y, w, h, color) {
@@ -198,35 +286,43 @@ document.addEventListener("keydown", (event) => {
   switch (event.key) {
     case "Down": // IE/Edge specific value
     case "ArrowDown":
-      myGameArea.playerMovesLeft = false;
-      myGameArea.playerMovesRight = false;
-      myGameArea.playerMovesUp = false;
-      myGameArea.playerMovesDown = true;
-      // player.moveDown();
+      if (myGameArea.playerMovesUp) {
+      } else {
+        myGameArea.playerMovesLeft = false;
+        myGameArea.playerMovesRight = false;
+        myGameArea.playerMovesUp = false;
+        myGameArea.playerMovesDown = true;
+      }
       break;
     case "Up": // IE/Edge specific value
     case "ArrowUp":
-      myGameArea.playerMovesLeft = false;
-      myGameArea.playerMovesRight = false;
-      myGameArea.playerMovesUp = true;
-      myGameArea.playerMovesDown = false;
-      // player.moveUp();
+      if (myGameArea.playerMovesDown) {
+      } else {
+        myGameArea.playerMovesLeft = false;
+        myGameArea.playerMovesRight = false;
+        myGameArea.playerMovesUp = true;
+        myGameArea.playerMovesDown = false;
+      }
       break;
     case "Left": // IE/Edge specific value
     case "ArrowLeft":
-      myGameArea.playerMovesLeft = true;
-      myGameArea.playerMovesRight = false;
-      myGameArea.playerMovesUp = false;
-      myGameArea.playerMovesDown = false;
-      // player.moveLeft();
+      if (myGameArea.playerMovesRight) {
+      } else {
+        myGameArea.playerMovesLeft = true;
+        myGameArea.playerMovesRight = false;
+        myGameArea.playerMovesUp = false;
+        myGameArea.playerMovesDown = false;
+      }
       break;
     case "Right": // IE/Edge specific value
     case "ArrowRight":
-      myGameArea.playerMovesLeft = false;
-      myGameArea.playerMovesRight = true;
-      myGameArea.playerMovesUp = false;
-      myGameArea.playerMovesDown = false;
-      // player.moveRight();
+      if (myGameArea.playerMovesLeft) {
+      } else {
+        myGameArea.playerMovesLeft = false;
+        myGameArea.playerMovesRight = true;
+        myGameArea.playerMovesUp = false;
+        myGameArea.playerMovesDown = false;
+      }
       break;
     case "Enter":
       // Do something for "enter" or "return" key press.
@@ -240,7 +336,7 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-let player, background; // creation of the player and background
+let background, snakeBody, snakeBody2, snakeBody3, snakeBody4; // creation of the player and background
 
 document.getElementById("start-button").addEventListener("click", (event) => {
   // create an event on the start game button
@@ -254,13 +350,53 @@ document.getElementById("start-button").addEventListener("click", (event) => {
   );
   myGameArea.components.push(background);
 
-  player = new Player(
-    myGameArea.canvas.width / 2, //positions the player in the center width
+  snakeBody = new BodySnake(
+    myGameArea.canvas.width / 2 - 20, //positions the player in the center width
     myGameArea.canvas.height / 2, //positions the player in the center height
-    10 * 3, //length of the player
+    10, //length of the player
     10 // width of the player
   );
-  myGameArea.components.push(player); // pushed the player inside the components array (with the background)
+  myGameArea.snake.push(snakeBody); // pushed the player inside the components array (with the background)
+
+  snakeBody2 = new BodySnake(
+    myGameArea.canvas.width / 2 - 10, //positions the player in the center width
+    myGameArea.canvas.height / 2, //positions the player in the center height
+    10, //length of the player
+    10 // width of the player
+  );
+  myGameArea.snake.push(snakeBody2); // pushed the player inside the components array (with the background)
+
+  snakeBody3 = new BodySnake(
+    myGameArea.canvas.width / 2, //positions the player in the center width
+    myGameArea.canvas.height / 2, //positions the player in the center height
+    10, //length of the player
+    10 // width of the player
+  );
+  myGameArea.snake.push(snakeBody3); // pushed the player inside the components array (with the background)
+
+  snakeBody4 = new BodySnake(
+    myGameArea.canvas.width / 2 + 10, //positions the player in the center width
+    myGameArea.canvas.height / 2, //positions the player in the center height
+    10, //length of the player
+    10 // width of the player
+  );
+  myGameArea.snake.push(snakeBody4); // pushed the player inside the components array (with the background)
+
+  snakeBody5 = new BodySnake(
+    myGameArea.canvas.width / 2 + 20, //positions the player in the center width
+    myGameArea.canvas.height / 2, //positions the player in the center height
+    10, //length of the player
+    10 // width of the player
+  );
+  myGameArea.snake.push(snakeBody5); // pushed the player inside the components array (with the background)
+
+  snakeBody6 = new BodySnake(
+    myGameArea.canvas.width / 2 + 30, //positions the player in the center width
+    myGameArea.canvas.height / 2, //positions the player in the center height
+    10, //length of the player
+    10 // width of the player
+  );
+  myGameArea.snake.push(snakeBody6); // pushed the player inside the components array (with the background)
 
   setInterval(() => {
     let randomXBonus =
@@ -269,7 +405,16 @@ document.getElementById("start-button").addEventListener("click", (event) => {
       Math.floor((Math.random() * myGameArea.canvas.height - 10) / 10) * 10;
 
     let anyBonus = new Bonus(randomXBonus, randomYBonus, 10, 10);
-    myGameArea.bonus.push(anyBonus);
+    if (
+      (anyBonus.x >= 50 && anyBonus.x <= 130) || // create a condition that will check the x and y of the randomBonus to not display it behind score of the player
+      (anyBonus.x >= 340 &&
+        anyBonus.x <= 420 && // create a condition that will check the x and y of the randomBonus to not display it behind bonus of the player
+        anyBonus.y >= 20 &&
+        anyBonus.y <= 30)
+    ) {
+    } else {
+      myGameArea.bonus.push(anyBonus);
+    }
   }, 4000);
   //   creates the random bonuses using a setinterval of 4000
 
@@ -280,13 +425,34 @@ document.getElementById("start-button").addEventListener("click", (event) => {
       Math.floor((Math.random() * myGameArea.canvas.height - 10) / 10) * 10;
 
     let anyJoker = new Joker(randomXJoker, randomYJoker, 10, 10);
-    myGameArea.joker.push(anyJoker);
-  }, 8000); //creates the exact same for jokers and can change the timing of jokers
+    if (
+      (anyJoker.x >= 50 && anyJoker.x <= 130) || // create a condition that will check the x and y of the randomJoker to not display it behind score of the player
+      (anyJoker.x >= 340 &&
+        anyJoker.x <= 420 && // create a condition that will check the x and y of the randomJoker to not display it behind bonus of the player
+        anyJoker.y >= 20 &&
+        anyJoker.y <= 30)
+    ) {
+    } else {
+      myGameArea.joker.push(anyJoker);
+    }
+  }, 16000); //creates the exact same for jokers and can change the timing of jokers
 
-  setInterval(myGameArea.updateGame, 1000 / 60);
+  if (!myGameArea.isGameOver) {
+    setInterval(myGameArea.updateGame, 1000 / 60);
+  }
   // frequency of update of the game
-  setInterval(myGameArea.updateLinearMovement, 40000 / 60);
-  // frequency of update of the movement of the snake (made two different to have a sequenced movement by 10 so that it's always moving 10 by 10 on every axis)
+  setInterval(myGameArea.updateGameOver, 1000 / 60);
+  // frequency of update of the game
 });
 
 let score = 0; // score starts at 0
+let bonusToEat = 0;
+
+myGameArea.testInterval();
+
+const reloadButton = document.getElementById("reload-button")
+
+let refreshPage = () => {
+  location.reload()
+}
+reloadButton.addEventListener("click", refreshPage)
