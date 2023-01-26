@@ -44,57 +44,85 @@ const myGameArea = {
     }
   },
   updateGame: function () {
-    if (!myGameArea.isGameOver) {
-      myGameArea.components.forEach((component) => {
-        component.render();
-      });
-      myGameArea.bonus.forEach((bonus1) => {
-        if (bonus1.checkEating(myGameArea.snake[0])) {
-          score += 1; // create bonus give score 1
-          myGameArea.testInterval();
-          let indexBonus1 = myGameArea.bonus.indexOf(bonus1); //find the index of the bonus from the bonus array
-          myGameArea.bonus.splice(indexBonus1, 1); // remove this specific bonus using the index from the array
-        }
-        bonus1.render(); // if no collision, just render the bonus
-      });
-      myGameArea.joker.forEach((joker1) => {
-        if (joker1.checkEating(myGameArea.snake[0])) {
-          bonusToEat += 1; // create bonus give score 2
-          let indexJoker1 = myGameArea.joker.indexOf(joker1); //find the index of the bonus from the bonus array
-          myGameArea.joker.splice(indexJoker1, 1); // remove this specific bonus using the index from the array
-        }
-        joker1.render(); // if no collision, just render the joker
-      });
+    toBeUpdated = true;
+    if (toBeUpdated) {
+      if (!myGameArea.isGameOver) {
+        myGameArea.components.forEach((component) => {
+          component.render();
+        });
+        myGameArea.bonus.forEach((bonus1) => {
+          if (bonus1.checkEating(myGameArea.snake[0])) {
+            score += 1; // create bonus give score 1
+            myGameArea.testInterval();
+            let indexBonus1 = myGameArea.bonus.indexOf(bonus1); //find the index of the bonus from the bonus array
+            myGameArea.bonus.splice(indexBonus1, 1); // remove this specific bonus using the index from the array
+          }
+          bonus1.render(); // if no collision, just render the bonus
+        });
+        myGameArea.joker.forEach((joker1) => {
+          if (joker1.checkEating(myGameArea.snake[0])) {
+            bonusToEat += 1; // create bonus give score 2
+            let indexJoker1 = myGameArea.joker.indexOf(joker1); //find the index of the bonus from the bonus array
+            myGameArea.joker.splice(indexJoker1, 1); // remove this specific bonus using the index from the array
+          }
+          joker1.render(); // if no collision, just render the joker
+        });
 
-      // Snake logic
-      // Snake rendering
-      myGameArea.snake.forEach((body) => {
-        body.render();
-      });
+        // Snake logic
+        // Snake rendering
+        myGameArea.snake.forEach((body) => {
+          body.render();
+        });
 
-      myGameArea.context.font = "20px Verdana";
-      myGameArea.context.fillStyle = "black";
-      myGameArea.context.fillText(
-        `Score: ${score}`,
-        myGameArea.canvas.width / 10,
-        40
-      );
+        myGameArea.context.font = "20px Verdana";
+        myGameArea.context.fillStyle = "black";
+        myGameArea.context.fillText(
+          `Score: ${score}`,
+          myGameArea.canvas.width / 10,
+          40
+        );
 
-      myGameArea.context.font = "20px Verdana";
-      myGameArea.context.fillStyle = "black";
-      myGameArea.context.fillText(
-        `Bonus: ${bonusToEat}`,
-        myGameArea.canvas.width - 160,
-        40
-      ); // display of score on top left
-    } else if (myGameArea.isGameOver) {
-      myGameArea.context.clearRect(
-        0,
-        0,
-        myGameArea.canvas.width,
-        myGameArea.canvas.height
-      );
-      document.getElementById('game-over').style.display = "flex";
+        myGameArea.context.font = "20px Verdana";
+        myGameArea.context.fillStyle = "black";
+        myGameArea.context.fillText(
+          `Bonus: ${bonusToEat}`,
+          myGameArea.canvas.width - 160,
+          40
+        ); // display of score on top left
+      } else if (myGameArea.isGameOver) {
+        myGameArea.context.clearRect(
+          0,
+          0,
+          myGameArea.canvas.width,
+          myGameArea.canvas.height
+        );
+        myGameArea.context.fillStyle = "#96d202";
+        myGameArea.context.fillRect(
+          0,
+          0,
+          myGameArea.canvas.width,
+          myGameArea.canvas.height
+        );
+        myGameArea.context.textAlign = "center";
+        myGameArea.context.fillStyle = "black";
+        myGameArea.context.fillText(
+          `Game-Over!`,
+          myGameArea.canvas.width / 2,
+          myGameArea.canvas.height / 2 - 30
+        );
+        myGameArea.context.fillText(
+          `Your score is ${score}`,
+          myGameArea.canvas.width / 2,
+          myGameArea.canvas.height / 2
+        );
+        myGameArea.context.fillText(
+          `and you got ${bonusToEat} Bonus eaten`,
+          myGameArea.canvas.width / 2,
+          myGameArea.canvas.height / 2 + 30
+        );
+      }
+    } else {
+      toBeUpdated = false;
     }
   },
 
@@ -104,7 +132,6 @@ const myGameArea = {
         myGameArea.snake[0].x === myGameArea.snake[i].x &&
         myGameArea.snake[0].y === myGameArea.snake[i].y
       ) {
-        console.log(myGameArea.isGameOver);
         myGameArea.isGameOver = true;
       }
     }
@@ -162,8 +189,6 @@ const myGameArea = {
     }
   }, // function to update the movement of the snake and respawn the snake on the other side of the screen
 };
-
-// document.getElementById("game-over").style.display = "flex"
 
 class Component {
   constructor(x, y, w, h, color) {
@@ -406,7 +431,9 @@ document.getElementById("start-button").addEventListener("click", (event) => {
     }
   }, 16000); //creates the exact same for jokers and can change the timing of jokers
 
-  setInterval(myGameArea.updateGame, 1000 / 60);
+  if (!myGameArea.isGameOver) {
+    setInterval(myGameArea.updateGame, 1000 / 60);
+  }
   // frequency of update of the game
   setInterval(myGameArea.updateGameOver, 1000 / 60);
   // frequency of update of the game
@@ -415,5 +442,4 @@ document.getElementById("start-button").addEventListener("click", (event) => {
 let score = 0; // score starts at 0
 let bonusToEat = 0;
 
-clearInterval(myGameArea.myInterval);
 myGameArea.testInterval();
