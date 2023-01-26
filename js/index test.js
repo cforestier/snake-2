@@ -53,14 +53,13 @@ const myGameArea = {
         });
         myGameArea.bonus.forEach((bonus1) => {
           if (bonus1.checkEating(myGameArea.snake[0])) {
-            myGameArea.ateABonus = true;
+            ateABonus = true;
             score += 1; // create bonus give score 1
             myGameArea.testInterval();
             let indexBonus1 = myGameArea.bonus.indexOf(bonus1); //find the index of the bonus from the bonus array
             myGameArea.bonus.splice(indexBonus1, 1); // remove this specific bonus using the index from the array
           }
           bonus1.render(); // if no collision, just render the bonus
-          myGameArea.ateABonus = false
         });
         myGameArea.joker.forEach((joker1) => {
           if (joker1.checkEating(myGameArea.snake[0])) {
