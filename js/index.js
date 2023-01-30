@@ -450,9 +450,9 @@ let bonusToEat = 0;
 
 myGameArea.testInterval();
 
-const reloadButton = document.getElementById("reload-button")
+const reloadButton = document.getElementById("reload-button");
 
 let refreshPage = () => {
-  location.reload()
-}
-reloadButton.addEventListener("click", refreshPage)
+  location.reload();
+};
+reloadButton.addEventListener("click", refreshPage);
